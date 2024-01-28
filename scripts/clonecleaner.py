@@ -56,39 +56,74 @@ class CloneCleanerScript(scripts.Script):
                 with FormColumn(min_width=160):
                     is_enabled = gr.Checkbox(value=False, label="Enable CloneCleaner")
                 with FormColumn(elem_id="CloneCleaner_gender"):
-                    gender = gr.Radio(["female", "male", "generic"], value="female", label="Male & generic not yet implemented.", elem_classes="ghosted")
+                    gender = gr.Radio(
+                        ["female", "male", "generic"],
+                        value="female",
+                        interactive=False,
+                        label="Male & generic not yet implemented.")
             with FormRow(elem_id="CloneCleaner_components"):
                 components = ["name", "country", "hair length", "hair style", "hair color"]
                 use_components = gr.CheckboxGroup(components, label="Use declone components", value=components)
             with FormRow(elem_id="CloneCleaner_midsection"):
                 with FormGroup():
                     insert_start = gr.Checkbox(value=True, label="Put declone tokens at beginning of prompt")
-                    declone_weight = gr.Slider(minimum=0.0, maximum=2.0, step=0.05, value=1.0, label="Weight of declone tokens", elem_id="CloneCleaner_slider")
+                    declone_weight = gr.Slider(
+                        minimum=0.0,
+                        maximum=2.0,
+                        step=0.05,
+                        value=1.0,
+                        label="Weight of declone tokens",
+                        elem_id="CloneCleaner_slider")
                 with FormGroup():
                     use_main_seed = gr.Checkbox(value=True, label="Use main image seed for decloning")
-                    with FormRow(variant="compact", elem_id="CloneCleaner_seed_row", elem_classes="ghosted"):
-                        declone_seed = gr.Number(label='Declone seed', value=-1, elem_id="CloneCleaner_seed")
-                        random_seed = ToolButton(random_symbol, elem_id="CloneCleaner_random_seed", label='Random seed')
-                        reuse_seed = ToolButton(reuse_symbol, elem_id="CloneCleaner_reuse_seed", label='Reuse seed')
+                    with FormRow(variant="compact", elem_id="CloneCleaner_seed_row"):
+                        declone_seed = gr.Number(visible=False, label='Declone seed', value=-1, elem_id="CloneCleaner_seed")
+                        random_seed = ToolButton(random_symbol, visible=False, elem_id="CloneCleaner_random_seed", label='Random seed')
+                        reuse_seed = ToolButton(reuse_symbol, visible=False, elem_id="CloneCleaner_reuse_seed", label='Reuse seed')
             with FormRow(elem_id="CloneCleaner_exclude_row") as exclude_row:
                 exclude_regions = gr.Dropdown(choices=regions, label="Exclude regions", multiselect=True)
                 exclude_hairlength = gr.Dropdown(choices=hairlength, label="Exclude hair lengths", multiselect=True)
                 exclude_haircolor = gr.Dropdown(choices=haircolor, label="Exclude hair colors", multiselect=True)
+
+        # event handlers        
+        def use_main_seed_change(use_main_seed):
+            return [
+                gr.update(visible=not use_main_seed),
+                gr.update(visible=not use_main_seed),
+                gr.update(visible=not use_main_seed)
+            ]
+        use_main_seed.change(fn=use_main_seed_change, inputs=use_main_seed, outputs=[declone_seed, random_seed, reuse_seed])
         
-        jstoggle = "() => {document.getElementById('CloneCleaner_seed_row').classList.toggle('ghosted')}"
-        jsclickseed = "() => {setRandomSeed('CloneCleaner_seed')}"
+        def random_seed_click():
+            return gr.update(value=-1)
+        random_seed.click(fn=random_seed_click, outputs=declone_seed, show_progress=False)
+
+        # set up the recycle seed button
+        # TODO find a way to avoid using js here
         jsgetgalleryindex = "(x, y) => [x, selected_gallery_index()]"
-        other_jstoggles =   "() => {" + \
-                    "const labels = document.getElementById('CloneCleaner_components').getElementsByTagName('label');" + \
-                    "const excludelabels = document.getElementById('CloneCleaner_exclude_row').getElementsByTagName('label');"  + \
-                    "excludelabels[1].classList.toggle('ghosted', !labels[2].firstChild.checked);" + \
-                    "excludelabels[2].classList.toggle('ghosted', !labels[4].firstChild.checked);" + \
-                    "}"
-        use_main_seed.change(fn=None, _js=jstoggle)
-        random_seed.click(fn=None, _js=jsclickseed, show_progress=False, inputs=[], outputs=[])
-        reuse_seed.click(fn=get_last_params, _js=jsgetgalleryindex, show_progress=False, inputs=[declone_seed, dummy_component], outputs=[declone_seed, dummy_component])
-        use_components.change(fn=None, _js=other_jstoggles)
-        
+        reuse_seed.click(
+            fn=get_last_params,
+            _js=jsgetgalleryindex,
+            show_progress=False,
+            inputs=[declone_seed, dummy_component],
+            outputs=[declone_seed, dummy_component])
+
+        def use_components_change(use_components):
+            exclude_regions = "country" in use_components
+            exclude_hairlength = "hair length" in use_components
+            exclude_haircolor = "hair color" in use_components
+            return [
+                gr.update(visible=exclude_regions),
+                gr.update(visible=exclude_hairlength),
+                gr.update(visible=exclude_haircolor),
+            ]
+        use_components.change(
+            fn=use_components_change,
+            inputs=use_components,
+            outputs=[exclude_regions, exclude_hairlength, exclude_haircolor],
+            show_progress=False)
+
+        # infotext
         def list_from_params_key(key, params):
             regionstring = params.get(key, "")
             regions = regionstring.split(",") if regionstring else []
