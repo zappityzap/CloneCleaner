@@ -57,7 +57,6 @@ class CloneCleanerScript(scripts.Script):
                     is_enabled = gr.Checkbox(value=False, label="Enable CloneCleaner")
                 with FormColumn(elem_id="CloneCleaner_gender"):
                     gender = gr.Radio(["female", "male", "generic"], value="female", label="Male & generic not yet implemented.", elem_classes="ghosted")
-                    gender.style(container=False, item_container=False)
             with FormRow(elem_id="CloneCleaner_components"):
                 components = ["name", "country", "hair length", "hair style", "hair color"]
                 use_components = gr.CheckboxGroup(components, label="Use declone components", value=components)
@@ -69,7 +68,6 @@ class CloneCleanerScript(scripts.Script):
                     use_main_seed = gr.Checkbox(value=True, label="Use main image seed for decloning")
                     with FormRow(variant="compact", elem_id="CloneCleaner_seed_row", elem_classes="ghosted"):
                         declone_seed = gr.Number(label='Declone seed', value=-1, elem_id="CloneCleaner_seed")
-                        declone_seed.style(container=False)
                         random_seed = ToolButton(random_symbol, elem_id="CloneCleaner_random_seed", label='Random seed')
                         reuse_seed = ToolButton(reuse_symbol, elem_id="CloneCleaner_reuse_seed", label='Reuse seed')
             with FormRow(elem_id="CloneCleaner_exclude_row") as exclude_row:
