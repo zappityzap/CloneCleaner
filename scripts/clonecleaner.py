@@ -37,7 +37,7 @@ def sorted_difference(a, b):
     return newlist
 
 class CloneCleanerScript(scripts.Script):
-    prompt_tree = read_yaml()   # maybe make this an instance property later
+    prompt_tree = read_yaml()
 
     def title(self):
         return "CloneCleaner"
@@ -77,9 +77,21 @@ class CloneCleanerScript(scripts.Script):
                 with FormGroup():
                     use_main_seed = gr.Checkbox(value=True, label="Use main image seed for decloning")
                     with FormRow(variant="compact", elem_id="CloneCleaner_seed_row"):
-                        declone_seed = gr.Number(visible=False, label='Declone seed', value=-1, elem_id="CloneCleaner_seed")
-                        random_seed = ToolButton(random_symbol, visible=False, elem_id="CloneCleaner_random_seed", label='Random seed')
-                        reuse_seed = ToolButton(reuse_symbol, visible=False, elem_id="CloneCleaner_reuse_seed", label='Reuse seed')
+                        declone_seed = gr.Number(
+                            visible=False,
+                            label='Declone seed',
+                            value=-1,
+                            elem_id="CloneCleaner_seed")
+                        random_seed = ToolButton(
+                            random_symbol,
+                            visible=False,
+                            elem_id="CloneCleaner_random_seed",
+                            label='Random seed')
+                        reuse_seed = ToolButton(
+                            reuse_symbol,
+                            visible=False,
+                            elem_id="CloneCleaner_reuse_seed",
+                            label='Reuse seed')
             with FormRow(elem_id="CloneCleaner_exclude_row") as exclude_row:
                 exclude_regions = gr.Dropdown(choices=regions, label="Exclude regions", multiselect=True)
                 exclude_hairlength = gr.Dropdown(choices=hairlength, label="Exclude hair lengths", multiselect=True)
@@ -92,7 +104,12 @@ class CloneCleanerScript(scripts.Script):
                 gr.update(visible=not use_main_seed),
                 gr.update(visible=not use_main_seed)
             ]
-        use_main_seed.change(fn=use_main_seed_change, inputs=use_main_seed, outputs=[declone_seed, random_seed, reuse_seed])
+        use_main_seed.change(
+            fn=use_main_seed_change,
+            inputs=use_main_seed,
+            outputs=[declone_seed, random_seed, reuse_seed],
+            show_progress=False
+        )
         
         def random_seed_click():
             return gr.update(value=-1)
@@ -140,6 +157,7 @@ class CloneCleanerScript(scripts.Script):
             (exclude_hairlength, lambda params:list_from_params_key("CC_exclude_hairlength", params)),
             (exclude_haircolor, lambda params:list_from_params_key("CC_exclude_haircolor", params))
         ]
+
         return [is_enabled, gender, insert_start, declone_weight, use_main_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor]
 
     def process(self, p, is_enabled, gender, insert_start, declone_weight, use_main_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor):
@@ -153,9 +171,6 @@ class CloneCleanerScript(scripts.Script):
         else:
             declone_seed = int(declone_seed)
 
-        # original_prompt = p.all_prompts[0]
-        # settings = f"gender={gender}, beginning={insert_start}, declone_weight={declone_weight}, main_seed={use_main_seed}, " + \
-        #             f"declone_seed={declone_seed}, exclude_regions={exclude_regions}"
         p.extra_generation_params["CloneCleaner enabled"] = True
         p.extra_generation_params["CC_gender"] = gender
         p.extra_generation_params["CC_insert_start"] = insert_start
@@ -182,7 +197,7 @@ class CloneCleanerScript(scripts.Script):
         use_style = "hair style" in use_components
         use_color = "hair color" in use_components
 
-        for i, prompt in enumerate(p.all_prompts):      # for each image in batch
+        for i, prompt in enumerate(p.all_prompts):
             rng = random.Random()
             seed = p.all_seeds[i] if use_main_seed else declone_seed + i
             rng.seed(seed)
@@ -227,30 +242,20 @@ class CloneCleanerScript(scripts.Script):
                 else:
                     p.all_prompts[i] = prompt + ", " + inserted_prompt
     
-    # def postprocess_batch(self, p, *args, **kwargs):
-    #     p.all_prompts[0] = p.prompt    # gets saved in file metadata AND in batch file metadata
-
-    # def process_batch(self, p, *args, **kwargs):
-    #     p.extra_generation_params["CC_TEST"] = "whatever"
-    #     p.all_prompts[0] = p.prompt + " SUFFIX"
-
     def postprocess(self, p, processed, *args):
         with open(os.path.join(paths.data_path, "params.txt"), "w", encoding="utf8") as file:
             p.all_prompts[0] = p.prompt
             processed = Processed(p, [], p.seed, "")
             file.write(processed.infotext(p, 0))
 
-# read with shared.opts.prompt_database_path
 def on_ui_settings():
-    info = shared.OptionInfo("prompt_tree.yml", "CloneCleaner prompt database path", section=("clonecleaner", "CloneCleaner"))
-    shared.opts.add_option("prompt_database_path", info)
-    # shared.opts.add_option("option1", shared.OptionInfo(
-    #     False,
-    #     "option1 description",
-    #     gr.Checkbox,
-    #     {"interactive": True},
-    #     section=('template', "Template"))
-    # )
+    shared.opts.add_option(
+        key="prompt_database_path",
+        info = shared.OptionInfo(
+            default="prompt_tree.yml",
+            label="CloneCleaner prompt database path",
+            section=("clonecleaner", "CloneCleanerZ"))
+    )
 
 
 script_callbacks.on_ui_settings(on_ui_settings)
