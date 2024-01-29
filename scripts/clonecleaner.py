@@ -98,6 +98,10 @@ class CloneCleanerScript(scripts.Script):
                             visible=False,
                             elem_id="CloneCleaner_reuse_seed",
                             label='Reuse seed')
+                    fixed_batch_seed = gr.Checkbox(
+                        value=False,
+                        elem_id="CloneCleaner_fixed_batch_seed",
+                        label="Use same seed for entire batch")
             with FormRow(elem_id="CloneCleaner_exclude_row") as exclude_row:
                 exclude_regions = gr.Dropdown(choices=regions, label="Exclude regions", multiselect=True)
                 exclude_hairlength = gr.Dropdown(choices=hairlength, label="Exclude hair lengths", multiselect=True)
@@ -164,10 +168,23 @@ class CloneCleanerScript(scripts.Script):
             (exclude_haircolor, lambda params:list_from_params_key("CC_exclude_haircolor", params))
         ]
 
-        return [is_enabled, gender, insert_start, declone_weight, use_main_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor]
+        return [is_enabled, gender, insert_start, declone_weight, use_main_seed, fixed_batch_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor]
 
-    def process(self, p, is_enabled, gender, insert_start, declone_weight, use_main_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor):
-        logger.debug(f"CCZ process(): entered")
+    def process(
+        self,
+        p,
+        is_enabled,
+        gender,
+        insert_start,
+        declone_weight,
+        use_main_seed,
+        fixed_batch_seed,
+        declone_seed,
+        use_components,
+        exclude_regions,
+        exclude_hairlength,
+        exclude_haircolor):
+        logger.debug(f"process(): entered")
         if not is_enabled:
             logger.debug(f"CCZ process(): not enabled, returning")
             return
@@ -213,8 +230,13 @@ class CloneCleanerScript(scripts.Script):
         logger.debug(f"CCZ process(): iterating through prompts for batch")
         for i, prompt in enumerate(p.all_prompts):
             rng = random.Random()
-            seed = p.all_seeds[i] if use_main_seed else declone_seed + i
-            logger.debug(f"CCZ process(): prompt #{i} seed={seed}")
+            logger.debug(f"fixed_batch_seed={fixed_batch_seed}")
+            seed = declone_seed
+            if not fixed_batch_seed:
+                logger.debug("not using fixed_batch_seed, incrementing image declone_seed")
+                seed = p.all_seeds[i] if use_main_seed else declone_seed + i
+            
+            logger.debug(f"process(): prompt #{i} main seed={p.all_seeds[i]}, declone_seed={declone_seed}, image declone_seed={seed}")
             rng.seed(seed)
 
             region = rng.choice(regions)
