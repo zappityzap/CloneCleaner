@@ -12,7 +12,8 @@ from modules.generation_parameters_copypaste import parse_generation_parameters
 from pprint import pprint
 
 def read_yaml():
-    promptfile = os.path.join(scripts.basedir(), "prompt_tree.yml")
+    prompt_database_path = shared.opts.data.get("ccz_prompt_database_path", "prompt_tree.yml")
+    promptfile = os.path.join(scripts.basedir(), prompt_database_path)
     with open(promptfile, "r", encoding="utf8") as stream:
         prompt_tree = yaml.safe_load(stream)
         return prompt_tree
