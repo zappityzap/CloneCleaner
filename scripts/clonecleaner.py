@@ -250,12 +250,28 @@ class CloneCleanerScript(scripts.Script):
             file.write(processed.infotext(p, 0))
 
 def on_ui_settings():
+    section = ("clonecleanerz", "CloneCleanerZ")
     shared.opts.add_option(
         key="ccz_prompt_database_path",
         info = shared.OptionInfo(
             default="prompt_tree.yml",
             label="CloneCleaner prompt database path",
-            section=("clonecleaner", "CloneCleanerZ"))
+            section=section
+        )
+        .info("prompt_tree.yml will be overwritten by updates. To customize, make a copy and update path here. Restart required.")
+    )
+
+    shared.opts.add_option(
+        key="ccz_log_level",
+        info=shared.OptionInfo(
+            default="INFO",
+            label="Log level",
+            component=gr.Dropdown,
+            component_args={"choices": ["INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL"]},
+            section=section,
+        )
+        # .link("?", "https://somewhere/something#here")
+        .info("Amount of detail in console logging. Restart required.")
     )
 
 
