@@ -251,7 +251,7 @@ class CloneCleanerScript(scripts.Script):
 
 def on_ui_settings():
     shared.opts.add_option(
-        key="prompt_database_path",
+        key="ccz_prompt_database_path",
         info = shared.OptionInfo(
             default="prompt_tree.yml",
             label="CloneCleaner prompt database path",
