@@ -9,7 +9,9 @@ from modules.processing import Processed
 from modules.ui_components import FormRow, FormColumn, FormGroup, ToolButton
 from modules.ui import random_symbol, reuse_symbol, gr_show
 from modules.generation_parameters_copypaste import parse_generation_parameters
-from pprint import pprint
+
+from scripts.clonecleanerz_logger import logger_clonecleanerz as logger
+
 
 def read_yaml():
     prompt_database_path = shared.opts.data.get("ccz_prompt_database_path", "prompt_tree.yml")
@@ -38,6 +40,9 @@ def sorted_difference(a, b):
     return newlist
 
 class CloneCleanerScript(scripts.Script):
+    log_level = shared.opts.data.get("ccz_log_level", "INFO")
+    logger.setLevel(log_level)
+
     prompt_tree = read_yaml()
 
     def title(self):
@@ -162,15 +167,22 @@ class CloneCleanerScript(scripts.Script):
         return [is_enabled, gender, insert_start, declone_weight, use_main_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor]
 
     def process(self, p, is_enabled, gender, insert_start, declone_weight, use_main_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor):
+        logger.debug(f"CCZ process(): entered")
         if not is_enabled:
+            logger.debug(f"CCZ process(): not enabled, returning")
             return
 
+        logger.debug(f"CCZ process(): setting declone seed")
         if use_main_seed:
+            logger.debug(f"CCZ process(): use_main_seed is true, using p.all_seeds[0]={p.all_seeds[0]}")
             declone_seed = p.all_seeds[0]
         elif declone_seed == -1:
+            logger.debug(f"CCZ process(): use_main_seed false and declone seed is -1, choosing random seed")
             declone_seed = int(random.randrange(4294967294))
         else:
+            logger.debug(f"CCZ process(): use_main_seed false and declone seed is not -1, using specified seed={declone_seed}")
             declone_seed = int(declone_seed)
+        logger.debug(f"CCZ process(): declone_seed={declone_seed}")
 
         p.extra_generation_params["CloneCleaner enabled"] = True
         p.extra_generation_params["CC_gender"] = gender
@@ -198,9 +210,11 @@ class CloneCleanerScript(scripts.Script):
         use_style = "hair style" in use_components
         use_color = "hair color" in use_components
 
+        logger.debug(f"CCZ process(): iterating through prompts for batch")
         for i, prompt in enumerate(p.all_prompts):
             rng = random.Random()
             seed = p.all_seeds[i] if use_main_seed else declone_seed + i
+            logger.debug(f"CCZ process(): prompt #{i} seed={seed}")
             rng.seed(seed)
 
             region = rng.choice(regions)
@@ -238,10 +252,14 @@ class CloneCleanerScript(scripts.Script):
                 if declone_weight != 1:
                     inserted_prompt = f"({inserted_prompt}:{declone_weight})"
 
+                logger.debug(f"CCZ process(): prompt #{i} inserting '{inserted_prompt}'")
+
                 if insert_start:
                     p.all_prompts[i] = inserted_prompt + ", " + prompt
                 else:
                     p.all_prompts[i] = prompt + ", " + inserted_prompt
+
+                logger.debug(f"CCZ process(): prompt #{i} = '{p.all_prompts[i]}'")
     
     def postprocess(self, p, processed, *args):
         with open(os.path.join(paths.data_path, "params.txt"), "w", encoding="utf8") as file:
