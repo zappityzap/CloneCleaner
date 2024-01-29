@@ -36,6 +36,6 @@ if not logger_clonecleanerz.handlers:
     logger_clonecleanerz.addHandler(handler)
 
 # Configure logger
-loglevel_string = getattr(shared.cmd_opts, "clonecleanerz_loglevel", "DEBUG")
+loglevel_string = getattr(shared.cmd_opts, "ccz_log_level", "INFO")
 loglevel = getattr(logging, loglevel_string.upper(), None)
 logger_clonecleanerz.setLevel(loglevel)
