@@ -189,17 +189,17 @@ class CloneCleanerScript(scripts.Script):
             logger.debug(f"process(): not enabled, returning")
             return
 
-        logger.debug(f"process(): setting declone seed")
+        logger.debug(f"setting declone seed")
         if use_main_seed:
-            logger.debug(f"process(): use_main_seed is true, using p.all_seeds[0]={p.all_seeds[0]}")
+            logger.debug(f"use_main_seed is true, using p.all_seeds[0]={p.all_seeds[0]}")
             declone_seed = p.all_seeds[0]
         elif declone_seed == -1:
-            logger.debug(f"process(): use_main_seed false and declone seed is -1, choosing random seed")
+            logger.debug(f"use_main_seed false and declone seed is -1, choosing random seed")
             declone_seed = int(random.randrange(4294967294))
         else:
-            logger.debug(f"process(): use_main_seed false and declone seed is not -1, using specified seed={declone_seed}")
+            logger.debug(f"use_main_seed false and declone seed is not -1, using specified seed={declone_seed}")
             declone_seed = int(declone_seed)
-        logger.debug(f"process(): declone_seed={declone_seed}")
+        logger.debug(f"declone_seed={declone_seed}")
 
         p.extra_generation_params["CloneCleaner enabled"] = True
         p.extra_generation_params["CC_gender"] = gender
@@ -227,7 +227,7 @@ class CloneCleanerScript(scripts.Script):
         use_style = "hair style" in use_components
         use_color = "hair color" in use_components
 
-        logger.debug(f"process(): iterating through prompts for batch")
+        logger.debug(f"iterating through prompts for batch")
         for i, prompt in enumerate(p.all_prompts):
             rng = random.Random()
             logger.debug(f"fixed_batch_seed={fixed_batch_seed}")
@@ -236,7 +236,7 @@ class CloneCleanerScript(scripts.Script):
                 logger.debug("not using fixed_batch_seed, incrementing image declone_seed")
                 seed = p.all_seeds[i] if use_main_seed else declone_seed + i
             
-            logger.debug(f"process(): prompt #{i} main seed={p.all_seeds[i]}, declone_seed={declone_seed}, image declone_seed={seed}")
+            logger.debug(f"prompt #{i} main seed={p.all_seeds[i]}, declone_seed={declone_seed}, image declone_seed={seed}")
             rng.seed(seed)
 
             region = rng.choice(regions)
@@ -281,7 +281,7 @@ class CloneCleanerScript(scripts.Script):
                 else:
                     p.all_prompts[i] = prompt + ", " + inserted_prompt
 
-                logger.debug(f"process(): prompt #{i} {p.all_prompts[i]}")
+                logger.debug(f"prompt #{i} {p.all_prompts[i]}")
     
     def postprocess(self, p, processed, *args):
         with open(os.path.join(paths.data_path, "params.txt"), "w", encoding="utf8") as file:
