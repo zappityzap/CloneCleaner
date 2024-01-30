@@ -201,6 +201,7 @@ class CloneCleanerScript(scripts.Script):
             declone_seed = int(declone_seed)
         logger.debug(f"declone_seed={declone_seed}")
 
+        # add params to batch
         p.extra_generation_params["CloneCleaner enabled"] = True
         p.extra_generation_params["CC_gender"] = gender
         p.extra_generation_params["CC_insert_start"] = insert_start
@@ -229,28 +230,38 @@ class CloneCleanerScript(scripts.Script):
 
         logger.debug(f"iterating through prompts for batch")
         for i, prompt in enumerate(p.all_prompts):
+            # set declone seed and initialize rng
             rng = random.Random()
             logger.debug(f"fixed_batch_seed={fixed_batch_seed}")
             seed = declone_seed
             if not fixed_batch_seed:
                 logger.debug("not using fixed_batch_seed, incrementing image declone_seed")
                 seed = p.all_seeds[i] if use_main_seed else declone_seed + i
-            
             logger.debug(f"prompt #{i} main seed={p.all_seeds[i]}, declone_seed={declone_seed}, image declone_seed={seed}")
             rng.seed(seed)
 
+            # select region
             region = rng.choice(regions)
+
+            # select country
             countries = list(countrytree[region].keys())
             countryweights = [countrytree[region][cty]["weight"] for cty in countries]
             country = rng.choices(countries, weights=countryweights)[0]
-
             countrydata = countrytree[region][country]
+
+            # select hair color
             hairdata = countrydata.get("hair", hairtree["defaultweight"][region])
             maincolor = rng.choices(haircolors, weights=[hairdata[col] for col in haircolors])[0]
             color = rng.choice(hairtree["color"][maincolor])
+            
+            # select hair length
             mainlength = rng.choice(hairlengths)
             length = rng.choice(hairtree["length"][mainlength])
+
+            # select hair style
             style = rng.choice(hairtree["style"][mainlength])
+
+            # select name
             name = rng.choice(countrydata["names"])
 
             inserted_prompt = ""
@@ -284,6 +295,7 @@ class CloneCleanerScript(scripts.Script):
                 logger.debug(f"prompt #{i} {p.all_prompts[i]}")
     
     def postprocess(self, p, processed, *args):
+        # TODO this doesn't seem right, the extension shouldn't be writing params.txt
         with open(os.path.join(paths.data_path, "params.txt"), "w", encoding="utf8") as file:
             p.all_prompts[0] = p.prompt
             processed = Processed(p, [], p.seed, "")
