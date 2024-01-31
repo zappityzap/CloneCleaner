@@ -58,6 +58,7 @@ class CloneCleanerScript(scripts.Script):
             regions = self.prompt_tree["country"].keys()
             hairlength = self.prompt_tree["hair"]["length"].keys()
             haircolor = self.prompt_tree["hair"]["color"].keys()
+            hairstyle = self.prompt_tree["hair"]["style"].keys()
             with FormRow():
                 with FormColumn(min_width=160):
                     is_enabled = gr.Checkbox(value=False, label="Enable CloneCleaner")
@@ -68,7 +69,7 @@ class CloneCleanerScript(scripts.Script):
                         interactive=False,
                         label="Male & generic not yet implemented.")
             with FormRow(elem_id="CloneCleaner_components"):
-                components = ["name", "country", "hair length", "hair style", "hair color"]
+                components = ["name", "country", "hair length", "hair color", "hair style"]
                 use_components = gr.CheckboxGroup(components, label="Use declone components", value=components)
             with FormRow(elem_id="CloneCleaner_midsection"):
                 with FormGroup():
@@ -106,6 +107,7 @@ class CloneCleanerScript(scripts.Script):
                 exclude_regions = gr.Dropdown(choices=regions, label="Exclude regions", multiselect=True)
                 exclude_hairlength = gr.Dropdown(choices=hairlength, label="Exclude hair lengths", multiselect=True)
                 exclude_haircolor = gr.Dropdown(choices=haircolor, label="Exclude hair colors", multiselect=True)
+                exclude_hairstyle = gr.Dropdown(choices=hairstyle, label="Exclude hair styles", multiselect=True)
 
         # event handlers        
         def use_main_seed_change(use_main_seed):
@@ -139,15 +141,17 @@ class CloneCleanerScript(scripts.Script):
             exclude_regions = "country" in use_components
             exclude_hairlength = "hair length" in use_components
             exclude_haircolor = "hair color" in use_components
+            exclude_hairstyle = "hair style" in use_components
             return [
                 gr.update(visible=exclude_regions),
                 gr.update(visible=exclude_hairlength),
                 gr.update(visible=exclude_haircolor),
+                gr.update(visible=exclude_hairstyle),
             ]
         use_components.change(
             fn=use_components_change,
             inputs=use_components,
-            outputs=[exclude_regions, exclude_hairlength, exclude_haircolor],
+            outputs=[exclude_regions, exclude_hairlength, exclude_haircolor, exclude_hairstyle],
             show_progress=False)
 
         # infotext
@@ -165,10 +169,11 @@ class CloneCleanerScript(scripts.Script):
             (declone_seed, "CC_declone_seed"),
             (exclude_regions, lambda params:list_from_params_key("CC_exclude_regions", params)),
             (exclude_hairlength, lambda params:list_from_params_key("CC_exclude_hairlength", params)),
-            (exclude_haircolor, lambda params:list_from_params_key("CC_exclude_haircolor", params))
+            (exclude_haircolor, lambda params:list_from_params_key("CC_exclude_haircolor", params)),
+            (exclude_hairstyle, lambda params:list_from_params_key("CC_exclude_hairstyle", params))
         ]
 
-        return [is_enabled, gender, insert_start, declone_weight, use_main_seed, fixed_batch_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor]
+        return [is_enabled, gender, insert_start, declone_weight, use_main_seed, fixed_batch_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor, exclude_hairstyle]
 
     def process(
         self,
@@ -183,7 +188,8 @@ class CloneCleanerScript(scripts.Script):
         use_components,
         exclude_regions,
         exclude_hairlength,
-        exclude_haircolor):
+        exclude_haircolor,
+        exclude_hairstyle):
         logger.debug(f"process(): entered")
         if not is_enabled:
             logger.debug(f"process(): not enabled, returning")
@@ -214,13 +220,16 @@ class CloneCleanerScript(scripts.Script):
             p.extra_generation_params["CC_exclude_hairlength"] = ",".join(exclude_hairlength)
         if exclude_haircolor:
             p.extra_generation_params["CC_exclude_haircolor"] = ",".join(exclude_haircolor)
-
+        if exclude_hairstyle:
+            p.extra_generation_params["CC_exclude_hairstyle"] = ",".join(exclude_hairstyle)
+            
         countrytree = self.prompt_tree["country"]
         hairtree = self.prompt_tree["hair"]
 
         regions = sorted_difference(countrytree.keys(), exclude_regions)
         hairlengths = sorted_difference(hairtree["length"].keys(), exclude_hairlength)
         haircolors = sorted_difference(hairtree["color"].keys(), exclude_haircolor)
+        hairstyles = sorted_difference(hairtree["style"].keys(), exclude_hairstyle)
 
         use_name = "name" in use_components
         use_country = "country" in use_components
@@ -242,28 +251,47 @@ class CloneCleanerScript(scripts.Script):
 
             # select region
             region = rng.choice(regions)
+            logger.debug(f"selected region={region} from {regions}")
 
-            # select country
+            # select countries from regions
             countries = list(countrytree[region].keys())
+
+            # select country from countries
             countryweights = [countrytree[region][cty]["weight"] for cty in countries]
             country = rng.choices(countries, weights=countryweights)[0]
+            logger.debug(f"selected country={country} from {countries}")
+
+            # countrydata is country weight, optional hair color weights, and names
             countrydata = countrytree[region][country]
+            logger.debug(f"countrydata={countrydata}")
 
             # select hair color
             hairdata = countrydata.get("hair", hairtree["defaultweight"][region])
+            logger.debug(f"hairdata={hairdata}")
             maincolor = rng.choices(haircolors, weights=[hairdata[col] for col in haircolors])[0]
-            color = rng.choice(hairtree["color"][maincolor])
+            logger.debug(f"selected maincolor={maincolor} from {haircolors}")
+            maincolor_colors = hairtree["color"][maincolor]
+            color = rng.choice(maincolor_colors)
+            logger.debug(f"selected color={color} from {maincolor_colors}")
             
             # select hair length
             mainlength = rng.choice(hairlengths)
-            length = rng.choice(hairtree["length"][mainlength])
+            logger.debug(f"selected mainlength={mainlength} from {hairlengths}")
+            mainlength_lengths = hairtree["length"][mainlength]
+            length = rng.choice(mainlength_lengths)
+            logger.debug(f"selected length={length} from {mainlength_lengths}")
 
             # select hair style
-            style = rng.choice(hairtree["style"][mainlength])
+            mainstyle = rng.choice(hairstyles)
+            logger.debug(f"selected mainstyle={mainstyle} from {hairstyles}")
+            mainstyle_styles = hairtree["style"][mainstyle]
+            style = rng.choice(mainstyle_styles)
+            logger.debug(f"selected style={style} from {mainstyle_styles}")
 
             # select name
-            name = rng.choice(countrydata["names"])
-
+            names = countrydata["names"]
+            name = rng.choice(names)
+            logger.debug(f"select name={name} from {names}")
             inserted_prompt = ""
 
             if use_name or use_country:
