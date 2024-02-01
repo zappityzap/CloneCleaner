@@ -29,24 +29,24 @@ def get_last_params(declone_seed, gallery_index):
     if gallery_index > 0:
         gallery_index -= 1
     params = parse_generation_parameters(prompt)
-    if params.get("CC_use_main_seed", "") == "True":
+    if params.get("CCZ_use_main_seed", "") == "True":
         return [int(float(params.get("Seed", "-0.0"))) + gallery_index, gr_show(False)]
     else:
-        return [int(float(params.get("CC_declone_seed", "-0.0"))) + gallery_index, gr_show(False)]
+        return [int(float(params.get("CCZ_declone_seed", "-0.0"))) + gallery_index, gr_show(False)]
 
 def sorted_difference(a, b):
     newlist = list(set(a).difference(b))
     newlist.sort()
     return newlist
 
-class CloneCleanerScript(scripts.Script):
+class CloneCleanerZScript(scripts.Script):
     log_level = shared.opts.data.get("ccz_log_level", "INFO")
     logger.setLevel(log_level)
 
     prompt_tree = read_yaml()
 
     def title(self):
-        return "CloneCleaner"
+        return "CloneCleanerZ"
 
     # show menu in either txt2img or img2img
     def show(self, is_img2img):
@@ -61,17 +61,17 @@ class CloneCleanerScript(scripts.Script):
             hairstyle = self.prompt_tree["hair"]["style"].keys()
             with FormRow():
                 with FormColumn(min_width=160):
-                    is_enabled = gr.Checkbox(value=False, label="Enable CloneCleaner")
-                with FormColumn(elem_id="CloneCleaner_gender"):
+                    is_enabled = gr.Checkbox(value=False, label="Enable CloneCleanerZ")
+                with FormColumn(elem_id="CCZ_gender"):
                     gender = gr.Radio(
                         ["female", "male", "generic"],
                         value="female",
                         interactive=False,
                         label="Male & generic not yet implemented.")
-            with FormRow(elem_id="CloneCleaner_components"):
+            with FormRow(elem_id="CCZ_components"):
                 components = ["name", "country", "hair length", "hair color", "hair style"]
                 use_components = gr.CheckboxGroup(components, label="Use declone components", value=components)
-            with FormRow(elem_id="CloneCleaner_midsection"):
+            with FormRow(elem_id="CCZ_midsection"):
                 with FormGroup():
                     insert_start = gr.Checkbox(value=True, label="Put declone tokens at beginning of prompt")
                     declone_weight = gr.Slider(
@@ -80,30 +80,30 @@ class CloneCleanerScript(scripts.Script):
                         step=0.05,
                         value=1.0,
                         label="Weight of declone tokens",
-                        elem_id="CloneCleaner_slider")
+                        elem_id="CCZ_slider")
                 with FormGroup():
                     use_main_seed = gr.Checkbox(value=True, label="Use main image seed for decloning")
-                    with FormRow(variant="compact", elem_id="CloneCleaner_seed_row"):
+                    with FormRow(variant="compact", elem_id="CCZ_seed_row"):
                         declone_seed = gr.Number(
                             visible=False,
                             label='Declone seed',
                             value=-1,
-                            elem_id="CloneCleaner_seed")
+                            elem_id="CCZ_seed")
                         random_seed = ToolButton(
                             random_symbol,
                             visible=False,
-                            elem_id="CloneCleaner_random_seed",
+                            elem_id="CCZ_random_seed",
                             label='Random seed')
                         reuse_seed = ToolButton(
                             reuse_symbol,
                             visible=False,
-                            elem_id="CloneCleaner_reuse_seed",
+                            elem_id="CCZ_reuse_seed",
                             label='Reuse seed')
                     fixed_batch_seed = gr.Checkbox(
                         value=False,
-                        elem_id="CloneCleaner_fixed_batch_seed",
+                        elem_id="CCZ_fixed_batch_seed",
                         label="Use same seed for entire batch")
-            with FormRow(elem_id="CloneCleaner_exclude_row") as exclude_row:
+            with FormRow(elem_id="CCZ_exclude_row") as exclude_row:
                 exclude_regions = gr.Dropdown(choices=regions, label="Exclude regions", multiselect=True)
                 exclude_hairlength = gr.Dropdown(choices=hairlength, label="Exclude hair lengths", multiselect=True)
                 exclude_haircolor = gr.Dropdown(choices=haircolor, label="Exclude hair colors", multiselect=True)
@@ -162,15 +162,15 @@ class CloneCleanerScript(scripts.Script):
 
         self.infotext_fields = [
             (is_enabled, "CloneCleaner enabled"),
-            (gender, "CC_gender"),
-            (insert_start, "CC_insert_start"),
-            (declone_weight, "CC_declone_weight"),
-            (use_main_seed, "CC_use_main_seed"),
-            (declone_seed, "CC_declone_seed"),
-            (exclude_regions, lambda params:list_from_params_key("CC_exclude_regions", params)),
-            (exclude_hairlength, lambda params:list_from_params_key("CC_exclude_hairlength", params)),
-            (exclude_haircolor, lambda params:list_from_params_key("CC_exclude_haircolor", params)),
-            (exclude_hairstyle, lambda params:list_from_params_key("CC_exclude_hairstyle", params))
+            (gender, "CCZ_gender"),
+            (insert_start, "CCZ_insert_start"),
+            (declone_weight, "CCZ_declone_weight"),
+            (use_main_seed, "CCZ_use_main_seed"),
+            (declone_seed, "CCZ_declone_seed"),
+            (exclude_regions, lambda params:list_from_params_key("CCZ_exclude_regions", params)),
+            (exclude_hairlength, lambda params:list_from_params_key("CCZ_exclude_hairlength", params)),
+            (exclude_haircolor, lambda params:list_from_params_key("CCZ_exclude_haircolor", params)),
+            (exclude_hairstyle, lambda params:list_from_params_key("CCZ_exclude_hairstyle", params))
         ]
 
         return [is_enabled, gender, insert_start, declone_weight, use_main_seed, fixed_batch_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor, exclude_hairstyle]
@@ -208,20 +208,20 @@ class CloneCleanerScript(scripts.Script):
         logger.debug(f"declone_seed={declone_seed}")
 
         # add params to batch
-        p.extra_generation_params["CloneCleaner enabled"] = True
-        p.extra_generation_params["CC_gender"] = gender
-        p.extra_generation_params["CC_insert_start"] = insert_start
-        p.extra_generation_params["CC_declone_weight"] = declone_weight
-        p.extra_generation_params["CC_use_main_seed"] = use_main_seed
-        p.extra_generation_params["CC_declone_seed"] = declone_seed
+        p.extra_generation_params["CloneCleanerZ enabled"] = True
+        p.extra_generation_params["CCZ_gender"] = gender
+        p.extra_generation_params["CCZ_insert_start"] = insert_start
+        p.extra_generation_params["CCZ_declone_weight"] = declone_weight
+        p.extra_generation_params["CCZ_use_main_seed"] = use_main_seed
+        p.extra_generation_params["CCZ_declone_seed"] = declone_seed
         if exclude_regions:
-            p.extra_generation_params["CC_exclude_regions"] = ",".join(exclude_regions)
+            p.extra_generation_params["CCZ_exclude_regions"] = ",".join(exclude_regions)
         if exclude_hairlength:
-            p.extra_generation_params["CC_exclude_hairlength"] = ",".join(exclude_hairlength)
+            p.extra_generation_params["CCZ_exclude_hairlength"] = ",".join(exclude_hairlength)
         if exclude_haircolor:
-            p.extra_generation_params["CC_exclude_haircolor"] = ",".join(exclude_haircolor)
+            p.extra_generation_params["CCZ_exclude_haircolor"] = ",".join(exclude_haircolor)
         if exclude_hairstyle:
-            p.extra_generation_params["CC_exclude_hairstyle"] = ",".join(exclude_hairstyle)
+            p.extra_generation_params["CCZ_exclude_hairstyle"] = ",".join(exclude_hairstyle)
             
         countrytree = self.prompt_tree["country"]
         hairtree = self.prompt_tree["hair"]
@@ -321,7 +321,7 @@ def on_ui_settings():
         key="ccz_prompt_database_path",
         info = shared.OptionInfo(
             default="prompt_tree.yml",
-            label="CloneCleaner prompt database path",
+            label="CloneCleanerZ prompt database path",
             section=section
         )
         .info("prompt_tree.yml will be overwritten by updates. To customize, make a copy and update path here. Restart required.")
