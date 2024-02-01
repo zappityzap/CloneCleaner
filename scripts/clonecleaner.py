@@ -293,11 +293,35 @@ class CloneCleanerZScript(scripts.Script):
             name = rng.choice(names)
             logger.debug(f"select name={name} from {names}")
 
-            # build prompt            
-            inserted_prompt = (
-                f"{name if use_name else 'person'} from {country if use_country else ''}, "
-                f"{length} {style} {color} hair" if use_length or use_style or use_color else ""
-            )
+            # build prompt
+            inserted_prompt = ""
+
+            if use_name or use_country:
+                inserted_prompt += name if use_name else "person"
+                inserted_prompt += " from " + country if use_country else ""
+            
+            if use_length or use_style or use_color:
+                if inserted_prompt:
+                    inserted_prompt += ", "
+                if use_length:
+                    inserted_prompt += length + " "
+                if use_style:
+                    inserted_prompt += style + " "
+                if use_color:
+                    inserted_prompt += color + " "
+                inserted_prompt += "hair"
+
+            if inserted_prompt:
+                if declone_weight != 1:
+                    inserted_prompt = f"({inserted_prompt}:{declone_weight})"
+
+                if insert_start:
+                    p.all_prompts[i] = inserted_prompt + ", " + prompt
+                else:
+                    p.all_prompts[i] = prompt + ", " + inserted_prompt
+
+                logger.debug(f"prompt #{i} {p.all_prompts[i]}")
+    
 
             # set prompt weight
             if declone_weight != 1:
