@@ -304,7 +304,7 @@ class CloneCleanerScript(scripts.Script):
                 inserted_prompt = f"({inserted_prompt}:{declone_weight})"
             
             # insert prompt
-            logger.info(f"Inserting: {inserted_prompt}")
+            logger.info(f"{inserted_prompt}")
             p.all_prompts[i] = f"{inserted_prompt}, {prompt}" if insert_start else f"{prompt}, {inserted_prompt}"
             logger.debug(f"prompt #{i} {p.all_prompts[i]}")
 

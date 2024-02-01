@@ -24,7 +24,7 @@ class ColoredFormatter(logging.Formatter):
 
 
 # Create a new logger
-logger_clonecleanerz = logging.getLogger("CloneCleanerZ")
+logger_clonecleanerz = logging.getLogger("CCZ")
 logger_clonecleanerz.propagate = False
 
 # Add handler if we don't have one.
