@@ -108,7 +108,7 @@ class CloneCleanerZScript(scripts.Script):
                     fixed_batch_seed = gr.Checkbox(
                         value=False,
                         elem_id="CCZ_fixed_batch_seed",
-                        label="Use same seed for entire batch")
+                        label="Use first seed for entire batch")
             with FormRow(elem_id="CCZ_exclude_row") as exclude_row:
                 exclude_regions = gr.Dropdown(choices=regions, label="Exclude regions", multiselect=True)
                 exclude_hairlength = gr.Dropdown(choices=hairlength, label="Exclude hair lengths", multiselect=True)
