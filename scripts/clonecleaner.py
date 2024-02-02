@@ -70,7 +70,13 @@ class CloneCleanerZScript(scripts.Script):
                         label="Male & generic not yet implemented.")
             with FormRow(elem_id="CCZ_components"):
                 components = ["name", "country", "hair length", "hair color", "hair style"]
-                use_components = gr.CheckboxGroup(components, label="Use declone components", value=components)
+                use_components = gr.CheckboxGroup(
+                    choices=components,
+                    label="Use declone components",
+                    type="value",
+                    value=components,
+                    elem_id="CCZ_use_components")
+
             with FormRow(elem_id="CCZ_midsection"):
                 with FormGroup():
                     insert_start = gr.Checkbox(value=True, label="Put declone tokens at beginning of prompt")
@@ -161,19 +167,32 @@ class CloneCleanerZScript(scripts.Script):
             return gr.update(value = regions)
 
         self.infotext_fields = [
-            (is_enabled, "CloneCleaner enabled"),
+            (is_enabled, "CloneCleanerZ enabled"),
             (gender, "CCZ_gender"),
             (insert_start, "CCZ_insert_start"),
             (declone_weight, "CCZ_declone_weight"),
             (use_main_seed, "CCZ_use_main_seed"),
             (declone_seed, "CCZ_declone_seed"),
+            (use_components, lambda params:list_from_params_key("CCZ_use_components", params)),
             (exclude_regions, lambda params:list_from_params_key("CCZ_exclude_regions", params)),
             (exclude_hairlength, lambda params:list_from_params_key("CCZ_exclude_hairlength", params)),
             (exclude_haircolor, lambda params:list_from_params_key("CCZ_exclude_haircolor", params)),
             (exclude_hairstyle, lambda params:list_from_params_key("CCZ_exclude_hairstyle", params))
         ]
-
-        return [is_enabled, gender, insert_start, declone_weight, use_main_seed, fixed_batch_seed, declone_seed, use_components, exclude_regions, exclude_hairlength, exclude_haircolor, exclude_hairstyle]
+        return [
+            is_enabled,
+            gender,
+            insert_start,
+            declone_weight,
+            use_main_seed,
+            fixed_batch_seed,
+            declone_seed,
+            use_components,
+            exclude_regions,
+            exclude_hairlength,
+            exclude_haircolor,
+            exclude_hairstyle
+        ]
 
     def process(
         self,
@@ -214,6 +233,7 @@ class CloneCleanerZScript(scripts.Script):
         p.extra_generation_params["CCZ_declone_weight"] = declone_weight
         p.extra_generation_params["CCZ_use_main_seed"] = use_main_seed
         p.extra_generation_params["CCZ_declone_seed"] = declone_seed
+        p.extra_generation_params["CCZ_use_components"] = ",".join(use_components)
         if exclude_regions:
             p.extra_generation_params["CCZ_exclude_regions"] = ",".join(exclude_regions)
         if exclude_hairlength:
