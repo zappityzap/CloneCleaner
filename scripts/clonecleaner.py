@@ -337,17 +337,13 @@ class CloneCleanerZScript(scripts.Script):
                     inserted_prompt += color + " "
                 inserted_prompt += "hair"
 
-            if inserted_prompt:
-                if declone_weight != 1:
-                    inserted_prompt = f"({inserted_prompt}:{declone_weight})"
+            if declone_weight != 1:
+                inserted_prompt = f"({inserted_prompt}:{declone_weight})"
 
-                if insert_start:
-                    p.all_prompts[i] = inserted_prompt + ", " + prompt
-                else:
-                    p.all_prompts[i] = prompt + ", " + inserted_prompt
-
-                logger.debug(f"prompt #{i} {p.all_prompts[i]}")
-    
+            if insert_start:
+                p.all_prompts[i] = inserted_prompt + ", " + prompt
+            else:
+                p.all_prompts[i] = prompt + ", " + inserted_prompt
 
             # set prompt weight
             if declone_weight != 1:
