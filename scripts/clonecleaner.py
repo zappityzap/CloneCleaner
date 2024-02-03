@@ -269,49 +269,55 @@ class CloneCleanerZScript(scripts.Script):
             logger.debug(f"prompt #{i} main seed={p.all_seeds[i]}, declone_seed={declone_seed}, image declone_seed={seed}")
             rng.seed(seed)
 
-            # select region
-            region = rng.choice(regions)
-            logger.debug(f"selected region={region} from {regions}")
+            if use_country:
+                # select region
+                region = rng.choice(regions)
+                logger.debug(f"selected region={region} from {regions}")
 
-            # select countries from regions
-            countries = list(countrytree[region].keys())
+                # select countries from regions
+                countries = list(countrytree[region].keys())
 
-            # select country from countries
-            countryweights = [countrytree[region][cty]["weight"] for cty in countries]
-            country = rng.choices(countries, weights=countryweights)[0]
-            logger.debug(f"selected country={country} from {countries}")
+                # select country from countries
+                countryweights = [countrytree[region][cty]["weight"] for cty in countries]
+                country = rng.choices(countries, weights=countryweights)[0]
+                logger.debug(f"selected country={country} from {countries}")
 
-            # countrydata is country weight, optional hair color weights, and names
-            countrydata = countrytree[region][country]
-            logger.debug(f"countrydata={countrydata}")
+                # countrydata is country weight, optional hair color weights, and names
+                countrydata = countrytree[region][country]
 
+            # load hairdata
+            if use_color or use_length or use_style:
+                hairdata = countrydata.get("hair", hairtree["defaultweight"][region])
+            
             # select hair color
-            hairdata = countrydata.get("hair", hairtree["defaultweight"][region])
-            logger.debug(f"hairdata={hairdata}")
-            maincolor = rng.choices(haircolors, weights=[hairdata[col] for col in haircolors])[0]
-            logger.debug(f"selected maincolor={maincolor} from {haircolors}")
-            maincolor_colors = hairtree["color"][maincolor]
-            color = rng.choice(maincolor_colors)
-            logger.debug(f"selected color={color} from {maincolor_colors}")
+            if use_color:
+                maincolor = rng.choices(haircolors, weights=[hairdata[col] for col in haircolors])[0]
+                logger.debug(f"selected maincolor={maincolor} from {haircolors}")
+                maincolor_colors = hairtree["color"][maincolor]
+                color = rng.choice(maincolor_colors)
+                logger.debug(f"selected color={color} from {maincolor_colors}")
             
             # select hair length
-            mainlength = rng.choice(hairlengths)
-            logger.debug(f"selected mainlength={mainlength} from {hairlengths}")
-            mainlength_lengths = hairtree["length"][mainlength]
-            length = rng.choice(mainlength_lengths)
-            logger.debug(f"selected length={length} from {mainlength_lengths}")
-
+            if use_length:
+                mainlength = rng.choice(hairlengths)
+                logger.debug(f"selected mainlength={mainlength} from {hairlengths}")
+                mainlength_lengths = hairtree["length"][mainlength]
+                length = rng.choice(mainlength_lengths)
+                logger.debug(f"selected length={length} from {mainlength_lengths}")
+            
             # select hair style
-            mainstyle = rng.choice(hairstyles)
-            logger.debug(f"selected mainstyle={mainstyle} from {hairstyles}")
-            mainstyle_styles = hairtree["style"][mainstyle]
-            style = rng.choice(mainstyle_styles)
-            logger.debug(f"selected style={style} from {mainstyle_styles}")
+            if use_style:
+                mainstyle = rng.choice(hairstyles)
+                logger.debug(f"selected mainstyle={mainstyle} from {hairstyles}")
+                mainstyle_styles = hairtree["style"][mainstyle]
+                style = rng.choice(mainstyle_styles)
+                logger.debug(f"selected style={style} from {mainstyle_styles}")
 
             # select name
-            names = countrydata["names"]
-            name = rng.choice(names)
-            logger.debug(f"select name={name} from {names}")
+            if use_name:
+                names = countrydata["names"]
+                name = rng.choice(names)
+                logger.debug(f"selected name={name} from {names}")
 
             # build prompt
             inserted_prompt = ""
