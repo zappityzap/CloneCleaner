@@ -3,6 +3,7 @@ import os
 import random
 import sys
 import yaml
+import traceback
 
 from modules import scripts, script_callbacks, shared, paths
 from modules.processing import Processed
@@ -62,6 +63,7 @@ class CloneCleanerZScript(scripts.Script):
             with FormRow():
                 with FormColumn(min_width=160):
                     is_enabled = gr.Checkbox(value=False, label="Enable CloneCleanerZ")
+                    adetailer_only = gr.Checkbox(value=False, label="Only for ADetailer")
                 with FormColumn(elem_id="CCZ_gender"):
                     gender = gr.Radio(
                         ["female", "male", "generic"],
@@ -181,6 +183,7 @@ class CloneCleanerZScript(scripts.Script):
         ]
         return [
             is_enabled,
+            adetailer_only,
             gender,
             insert_start,
             declone_weight,
@@ -198,6 +201,7 @@ class CloneCleanerZScript(scripts.Script):
         self,
         p,
         is_enabled,
+        adetailer_only,
         gender,
         insert_start,
         declone_weight,
@@ -213,7 +217,14 @@ class CloneCleanerZScript(scripts.Script):
         if not is_enabled:
             logger.debug(f"process(): not enabled, returning")
             return
-
+        
+        trace = traceback.extract_stack()
+        from_adetailer = any("adetailer" in frame.filename for frame in trace)
+        
+        if not from_adetailer and adetailer_only:
+            logger.debug(f"from_adetailer={from_adetailer} and adetailer_only={adetailer_only}, returning")
+            return
+        
         logger.debug(f"setting declone seed")
         if use_main_seed:
             logger.debug(f"use_main_seed is true, using p.all_seeds[0]={p.all_seeds[0]}")
