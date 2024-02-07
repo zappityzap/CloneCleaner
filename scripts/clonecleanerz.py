@@ -218,7 +218,7 @@ class CloneCleanerZScript(scripts.Script):
             logger.debug(f"process(): not enabled, returning")
             return
         
-        trace = traceback.extract_stack()
+        stack = traceback.extract_stack()
         from_adetailer = any("adetailer" in frame.filename for frame in stack)
         
         if not from_adetailer and only_adetailer:
