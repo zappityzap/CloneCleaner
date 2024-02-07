@@ -63,7 +63,7 @@ class CloneCleanerZScript(scripts.Script):
             with FormRow():
                 with FormColumn(min_width=160):
                     is_enabled = gr.Checkbox(value=False, label="Enable CloneCleanerZ")
-                    adetailer_only = gr.Checkbox(value=False, label="Only for ADetailer")
+                    only_adetailer = gr.Checkbox(value=False, label="Only ADetailer")
                 with FormColumn(elem_id="CCZ_gender"):
                     gender = gr.Radio(
                         ["female", "male", "generic"],
@@ -183,7 +183,7 @@ class CloneCleanerZScript(scripts.Script):
         ]
         return [
             is_enabled,
-            adetailer_only,
+            only_adetailer,
             gender,
             insert_start,
             declone_weight,
@@ -201,7 +201,7 @@ class CloneCleanerZScript(scripts.Script):
         self,
         p,
         is_enabled,
-        adetailer_only,
+        only_adetailer,
         gender,
         insert_start,
         declone_weight,
@@ -219,10 +219,10 @@ class CloneCleanerZScript(scripts.Script):
             return
         
         trace = traceback.extract_stack()
-        from_adetailer = any("adetailer" in frame.filename for frame in trace)
+        from_adetailer = any("adetailer" in frame.filename for frame in stack)
         
-        if not from_adetailer and adetailer_only:
-            logger.debug(f"from_adetailer={from_adetailer} and adetailer_only={adetailer_only}, returning")
+        if not from_adetailer and only_adetailer:
+            logger.debug(f"from_adetailer={from_adetailer} and only_adetailer={only_adetailer}, returning")
             return
         
         logger.debug(f"setting declone seed")
