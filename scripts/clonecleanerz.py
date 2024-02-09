@@ -356,10 +356,6 @@ class CloneCleanerZScript(scripts.Script):
             else:
                 p.all_prompts[i] = prompt + ", " + inserted_prompt
 
-            # set prompt weight
-            if declone_weight != 1:
-                inserted_prompt = f"({inserted_prompt}:{declone_weight})"
-            
             # insert prompt
             logger.info(f"{inserted_prompt}")
             p.all_prompts[i] = f"{inserted_prompt}, {prompt}" if insert_start else f"{prompt}, {inserted_prompt}"
