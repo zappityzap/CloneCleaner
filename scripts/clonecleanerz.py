@@ -88,7 +88,7 @@ class CloneCleanerZScript(scripts.Script):
                         step=0.05,
                         value=1.0,
                         label="Weight of declone tokens",
-                        elem_id="CCZ_slider")
+                        elem_id="CCZ_declone_weight")
                 with FormGroup():
                     use_main_seed = gr.Checkbox(value=True, label="Use main image seed for decloning")
                     with FormRow(variant="compact", elem_id="CCZ_seed_row"):
