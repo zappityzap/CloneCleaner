@@ -12,7 +12,7 @@ from modules.ui import random_symbol, reuse_symbol, gr_show
 from modules.generation_parameters_copypaste import parse_generation_parameters
 
 from scripts.clonecleanerz_logger import logger_clonecleanerz as logger
-
+from lib_ccz.state import instance as state
 
 def read_yaml():
     prompt_database_path = shared.opts.data.get("ccz_prompt_database_path", "prompt_tree.yml")
@@ -62,7 +62,7 @@ class CloneCleanerZScript(scripts.Script):
             hairstyle = self.prompt_tree["hair"]["style"].keys()
             with FormRow():
                 with FormColumn(min_width=160):
-                    is_enabled = gr.Checkbox(value=False, label="Enable CloneCleanerZ")
+                    enable = gr.Checkbox(value=False, label="Enable CloneCleanerZ")
                     only_adetailer = gr.Checkbox(value=False, label="Only ADetailer")
                 with FormColumn(elem_id="CCZ_gender"):
                     gender = gr.Radio(
@@ -169,7 +169,7 @@ class CloneCleanerZScript(scripts.Script):
             return gr.update(value = regions)
 
         self.infotext_fields = [
-            (is_enabled, "CloneCleanerZ enabled"),
+            (enable, "CCZ_enable"),
             (gender, "CCZ_gender"),
             (insert_start, "CCZ_insert_start"),
             (declone_weight, "CCZ_declone_weight"),
@@ -182,7 +182,7 @@ class CloneCleanerZScript(scripts.Script):
             (exclude_hairstyle, lambda params:list_from_params_key("CCZ_exclude_hairstyle", params))
         ]
         return [
-            is_enabled,
+            enable,
             only_adetailer,
             gender,
             insert_start,
@@ -200,7 +200,7 @@ class CloneCleanerZScript(scripts.Script):
     def process(
         self,
         p,
-        is_enabled,
+        enable,
         only_adetailer,
         gender,
         insert_start,
@@ -214,70 +214,85 @@ class CloneCleanerZScript(scripts.Script):
         exclude_haircolor,
         exclude_hairstyle):
         logger.debug(f"process(): entered")
-        if not is_enabled:
+
+        state.enable = enable
+        state.only_adetailer = only_adetailer
+        state.gender = gender
+        state.insert_start = insert_start
+        state.declone_weight = declone_weight
+        state.use_main_seed = use_main_seed
+        state.fixed_batch_seed = fixed_batch_seed
+        state.declone_seed = declone_seed
+        state.use_components = use_components
+        state.exclude_regions = exclude_regions
+        state.exclude_hairlength = exclude_hairlength
+        state.exclude_haircolor = exclude_haircolor
+        state.exclude_hairstyle = exclude_hairstyle
+
+        if not state.enable:
             logger.debug(f"process(): not enabled, returning")
             return
-        
+
         stack = traceback.extract_stack()
         from_adetailer = any("adetailer" in frame.filename for frame in stack)
         
-        if not from_adetailer and only_adetailer:
-            logger.debug(f"from_adetailer={from_adetailer} and only_adetailer={only_adetailer}, returning")
+        if not from_adetailer and state.only_adetailer:
+            logger.debug(f"from_adetailer={from_adetailer} and only_adetailer={state.only_adetailer}, returning")
             return
         
         logger.debug(f"setting declone seed")
-        if use_main_seed:
+        if state.use_main_seed:
             logger.debug(f"use_main_seed is true, using p.all_seeds[0]={p.all_seeds[0]}")
-            declone_seed = p.all_seeds[0]
-        elif declone_seed == -1:
+            state.declone_seed = p.all_seeds[0]
+        elif state.declone_seed == -1:
             logger.debug(f"use_main_seed false and declone seed is -1, choosing random seed")
-            declone_seed = int(random.randrange(4294967294))
+            state.declone_seed = int(random.randrange(4294967294))
         else:
-            logger.debug(f"use_main_seed false and declone seed is not -1, using specified seed={declone_seed}")
-            declone_seed = int(declone_seed)
-        logger.debug(f"declone_seed={declone_seed}")
+            logger.debug(f"use_main_seed false and declone seed is not -1, using specified seed={state.declone_seed}")
+            state.declone_seed = int(state.declone_seed)
+        logger.debug(f"declone_seed={state.declone_seed}")
 
         # add params to batch
-        p.extra_generation_params["CloneCleanerZ enabled"] = True
-        p.extra_generation_params["CCZ_gender"] = gender
-        p.extra_generation_params["CCZ_insert_start"] = insert_start
-        p.extra_generation_params["CCZ_declone_weight"] = declone_weight
-        p.extra_generation_params["CCZ_use_main_seed"] = use_main_seed
-        p.extra_generation_params["CCZ_declone_seed"] = declone_seed
-        p.extra_generation_params["CCZ_use_components"] = ",".join(use_components)
-        if exclude_regions:
-            p.extra_generation_params["CCZ_exclude_regions"] = ",".join(exclude_regions)
-        if exclude_hairlength:
-            p.extra_generation_params["CCZ_exclude_hairlength"] = ",".join(exclude_hairlength)
-        if exclude_haircolor:
-            p.extra_generation_params["CCZ_exclude_haircolor"] = ",".join(exclude_haircolor)
-        if exclude_hairstyle:
-            p.extra_generation_params["CCZ_exclude_hairstyle"] = ",".join(exclude_hairstyle)
+        p.extra_generation_params["CCZ_enable"] = state.enable
+        p.extra_generation_params["CCZ_gender"] = state.gender
+        p.extra_generation_params["CCZ_insert_start"] = state.insert_start
+        p.extra_generation_params["CCZ_declone_weight"] = state.declone_weight
+        p.extra_generation_params["CCZ_use_main_seed"] = state.use_main_seed
+        p.extra_generation_params["CCZ_declone_seed"] = state.declone_seed
+        p.extra_generation_params["CCZ_use_components"] = ",".join(state.use_components)
+        if state.exclude_regions:
+            p.extra_generation_params["CCZ_exclude_regions"] = ",".join(state.exclude_regions)
+        if state.exclude_hairlength:
+            p.extra_generation_params["CCZ_exclude_hairlength"] = ",".join(state.exclude_hairlength)
+        if state.exclude_haircolor:
+            p.extra_generation_params["CCZ_exclude_haircolor"] = ",".join(state.exclude_haircolor)
+        if state.exclude_hairstyle:
+            p.extra_generation_params["CCZ_exclude_hairstyle"] = ",".join(state.exclude_hairstyle)
             
         countrytree = self.prompt_tree["country"]
         hairtree = self.prompt_tree["hair"]
 
-        regions = sorted_difference(countrytree.keys(), exclude_regions)
-        hairlengths = sorted_difference(hairtree["length"].keys(), exclude_hairlength)
-        haircolors = sorted_difference(hairtree["color"].keys(), exclude_haircolor)
-        hairstyles = sorted_difference(hairtree["style"].keys(), exclude_hairstyle)
+        regions = sorted_difference(countrytree.keys(), state.exclude_regions)
+        hairlengths = sorted_difference(hairtree["length"].keys(), state.exclude_hairlength)
+        haircolors = sorted_difference(hairtree["color"].keys(), state.exclude_haircolor)
+        hairstyles = sorted_difference(hairtree["style"].keys(), state.exclude_hairstyle)
 
-        use_name = "name" in use_components
-        use_country = "country" in use_components
-        use_length = "hair length" in use_components
-        use_style = "hair style" in use_components
-        use_color = "hair color" in use_components
+        use_name = "name" in state.use_components
+        use_country = "country" in state.use_components
+        use_length = "hair length" in state.use_components
+        use_style = "hair style" in state.use_components
+        use_color = "hair color" in state.use_components
 
         logger.debug(f"iterating through prompts for batch")
         for i, prompt in enumerate(p.all_prompts):
             # set declone seed and initialize rng
             rng = random.Random()
-            logger.debug(f"fixed_batch_seed={fixed_batch_seed}")
-            seed = declone_seed
-            if not fixed_batch_seed:
+            logger.debug(f"fixed_batch_seed={state.fixed_batch_seed}")
+            seed = state.declone_seed
+            if not state.fixed_batch_seed:
                 logger.debug("not using fixed_batch_seed, incrementing image declone_seed")
-                seed = p.all_seeds[i] if use_main_seed else declone_seed + i
-            logger.debug(f"prompt #{i} main seed={p.all_seeds[i]}, declone_seed={declone_seed}, image declone_seed={seed}")
+                seed = p.all_seeds[i] if state.use_main_seed else state.declone_seed + i
+            logger.debug(f"prompt #{i} main seed={p.all_seeds[i]}, declone_seed={state.declone_seed}, image declone_seed={seed}")
             rng.seed(seed)
 
             if use_country:
@@ -348,17 +363,17 @@ class CloneCleanerZScript(scripts.Script):
                     inserted_prompt += color + " "
                 inserted_prompt += "hair"
 
-            if declone_weight != 1:
+            if state.declone_weight != 1:
                 inserted_prompt = f"({inserted_prompt}:{declone_weight})"
 
-            if insert_start:
+            if state.insert_start:
                 p.all_prompts[i] = inserted_prompt + ", " + prompt
             else:
                 p.all_prompts[i] = prompt + ", " + inserted_prompt
 
             # insert prompt
             logger.info(f"{inserted_prompt}")
-            p.all_prompts[i] = f"{inserted_prompt}, {prompt}" if insert_start else f"{prompt}, {inserted_prompt}"
+            p.all_prompts[i] = f"{inserted_prompt}, {prompt}" if state.insert_start else f"{prompt}, {inserted_prompt}"
             logger.debug(f"prompt #{i} {p.all_prompts[i]}")
 
     def postprocess(self, p, processed, *args):
