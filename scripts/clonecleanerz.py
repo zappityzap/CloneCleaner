@@ -12,7 +12,8 @@ from modules.ui import random_symbol, reuse_symbol, gr_show
 from modules.generation_parameters_copypaste import parse_generation_parameters
 
 from scripts.clonecleanerz_logger import logger_clonecleanerz as logger
-from lib_ccz.state import instance as state
+from lib_ccz.state import state, xyz_attrs, apply_xyz
+from lib_ccz import xyz_grid
 
 def read_yaml():
     prompt_database_path = shared.opts.data.get("ccz_prompt_database_path", "prompt_tree.yml")
@@ -229,6 +230,10 @@ class CloneCleanerZScript(scripts.Script):
         state.exclude_haircolor = exclude_haircolor
         state.exclude_hairstyle = exclude_hairstyle
 
+        # apply XYZ settings
+        apply_xyz()
+        xyz_attrs.clear()
+
         if not state.enable:
             logger.debug(f"process(): not enabled, returning")
             return
@@ -259,7 +264,14 @@ class CloneCleanerZScript(scripts.Script):
         p.extra_generation_params["CCZ_declone_weight"] = state.declone_weight
         p.extra_generation_params["CCZ_use_main_seed"] = state.use_main_seed
         p.extra_generation_params["CCZ_declone_seed"] = state.declone_seed
-        p.extra_generation_params["CCZ_use_components"] = ",".join(state.use_components)
+
+        # p.extra_generation_params["CCZ_use_components"] = ",".join(state.use_components)
+        p.extra_generation_params["CCZ_use_components"] = (
+            state.use_components[0]
+            if len(state.use_components) == 1
+            else ",".join(state.use_components)
+        )
+
         if state.exclude_regions:
             p.extra_generation_params["CCZ_exclude_regions"] = ",".join(state.exclude_regions)
         if state.exclude_hairlength:
@@ -295,21 +307,20 @@ class CloneCleanerZScript(scripts.Script):
             logger.debug(f"prompt #{i} main seed={p.all_seeds[i]}, declone_seed={state.declone_seed}, image declone_seed={seed}")
             rng.seed(seed)
 
-            if use_country:
-                # select region
-                region = rng.choice(regions)
-                logger.debug(f"selected region={region} from {regions}")
+            # select region
+            region = rng.choice(regions)
+            logger.debug(f"selected region={region} from {regions}")
 
-                # select countries from regions
-                countries = list(countrytree[region].keys())
+            # select countries from regions
+            countries = list(countrytree[region].keys())
 
-                # select country from countries
-                countryweights = [countrytree[region][cty]["weight"] for cty in countries]
-                country = rng.choices(countries, weights=countryweights)[0]
-                logger.debug(f"selected country={country} from {countries}")
+            # select country from countries
+            countryweights = [countrytree[region][cty]["weight"] for cty in countries]
+            country = rng.choices(countries, weights=countryweights)[0]
+            logger.debug(f"selected country={country} from {countries}")
 
-                # countrydata is country weight, optional hair color weights, and names
-                countrydata = countrytree[region][country]
+            # countrydata is country weight, optional hair color weights, and names
+            countrydata = countrytree[region][country]
 
             # load hairdata
             if use_color or use_length or use_style:
@@ -364,7 +375,7 @@ class CloneCleanerZScript(scripts.Script):
                 inserted_prompt += "hair"
 
             if state.declone_weight != 1:
-                inserted_prompt = f"({inserted_prompt}:{declone_weight})"
+                inserted_prompt = f"({inserted_prompt}:{state.declone_weight})"
 
             if state.insert_start:
                 p.all_prompts[i] = inserted_prompt + ", " + prompt
@@ -408,5 +419,6 @@ def on_ui_settings():
         .info("Amount of detail in console logging. Restart required.")
     )
 
+xyz_grid.patch()
 
 script_callbacks.on_ui_settings(on_ui_settings)

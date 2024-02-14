@@ -1,4 +1,5 @@
 from typing import Union, List, Any
+from scripts.clonecleanerz_logger import logger_clonecleanerz as logger
 
 class State:
     enable: bool = False
@@ -16,4 +17,12 @@ class State:
     exclude_hairstyle: List[str] = []
 
 
-instance = State()
+state = State()
+xyz_attrs: dict = {}
+
+def apply_xyz():
+    global state
+    logger.debug("apply_xyz(): entered")
+    for k, v in xyz_attrs.items():
+        logger.debug(f"applying k={k}, v={v}")
+        setattr(state, k, v)
