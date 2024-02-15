@@ -21,13 +21,19 @@ If there's anything about this extension that doesn't work the way you think it 
 * Automatic1111 forks: unknown
 * ComfyUI: No, maybe later?
 
-## Extension Compatibility
-* ADetailer: Yes, see below for details.
-* Dynamic Prompts: Yes, Dynamic Prompts runs first.
-* XYZ Plot: Works with XYZ plots, but doesn't expose parameters for plotting. PRs welcome.
+## Feature Compatibility
+* Infotext: Yes
 * Hires Fix: Yes? Reuses first pass prompt correctly, does not insert into hires prompt.
+* XYZ Plot: Works with XYZ plots, and supports plotting all parameters except declone components and exclude lists.
+
+## Extension Compatibility
+* [ADetailer](https://github.com/Bing-su/adetailer): Yes, see below for details.
+* [Dynamic Prompts](https://github.com/adieyal/sd-dynamic-prompts): Yes, Dynamic Prompts runs first.
+* [One Button Prompt](https://github.com/AIrjen/OneButtonPrompt): Yes
+* [AnimateDiff](https://github.com/continue-revolution/sd-webui-animatediff): Yes
 
 ## Version History
+* [v1.0.9](https://github.com/zappityzap/zccz/releases/tag/v1.0.8) - XYZ Plot support
 * [v1.0.8](https://github.com/zappityzap/zccz/releases/tag/v1.0.8) - ADetailer-only mode
 * [v1.0.7](https://github.com/zappityzap/zccz/releases/tag/v1.0.7) - ADetailer support, improved debug logging, README update
 * [v1.0.6](https://github.com/zappityzap/zccz/releases/tag/v1.0.6) - Support infotext pasting, revert broken prompt building code, new README
