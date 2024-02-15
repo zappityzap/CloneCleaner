@@ -45,10 +45,12 @@ def patch():
             label=f"{MODULE} Declone seed",
             type=int_or_float,
             apply=apply_state("declone_seed")),
+        xyz_module.AxisOption(
             label=f"{MODULE} Components",
             type=str,
             apply=apply_components("use_components"),
-            choices=lambda: ["name", "country", "hair length", "hair color", "hair style"],),
+            choices=lambda: ["name", "country", "hair length", "hair color", "hair style"]),
+        ])
 
 
 def apply_state(k, key_map=None):
