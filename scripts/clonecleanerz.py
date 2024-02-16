@@ -63,60 +63,88 @@ class CloneCleanerZScript(scripts.Script):
             hairstyle = self.prompt_tree["hair"]["style"].keys()
             with FormRow():
                 with FormColumn(min_width=160):
-                    enable = gr.Checkbox(value=False, label="Enable CloneCleanerZ")
-                    only_adetailer = gr.Checkbox(value=False, label="Only ADetailer")
-                with FormColumn(elem_id="CCZ_gender"):
+                    enable = gr.Checkbox(
+                        label="Enable CloneCleanerZ",
+                        value=False,
+                        elem_id="CCZ_enable")
+                    only_adetailer = gr.Checkbox(
+                        label="Only ADetailer",
+                        value=False,
+                        elem_id="CCZ_only_adetailer")
+                with FormColumn():
                     gender = gr.Radio(
-                        ["female", "male", "generic"],
-                        value="female",
+                        label="Male & generic not yet implemented.",
                         interactive=False,
-                        label="Male & generic not yet implemented.")
-            with FormRow(elem_id="CCZ_components"):
-                components = ["name", "country", "hair length", "hair color", "hair style"]
+                        value="female",
+                        choices=["female", "male", "generic"],
+                        elem_id="CCZ_gender")
+            with FormRow():
+                use_components = ["name", "country", "hair length", "hair color", "hair style"]
                 use_components = gr.CheckboxGroup(
-                    choices=components,
                     label="Use declone components",
                     type="value",
-                    value=components,
+                    value=use_components,
+                    choices=use_components,
                     elem_id="CCZ_use_components")
-
-            with FormRow(elem_id="CCZ_midsection"):
+            with FormRow():
                 with FormGroup():
-                    insert_start = gr.Checkbox(value=True, label="Put declone tokens at beginning of prompt")
+                    insert_start = gr.Checkbox(
+                        label="Insert declone tokens at start of prompt",
+                        value=True,
+                        elem_id="CCZ_insert_start")
                     declone_weight = gr.Slider(
+                        label="Weight of declone tokens",
                         minimum=0.0,
                         maximum=2.0,
                         step=0.05,
                         value=1.0,
-                        label="Weight of declone tokens",
                         elem_id="CCZ_declone_weight")
                 with FormGroup():
-                    use_main_seed = gr.Checkbox(value=True, label="Use main image seed for decloning")
-                    with FormRow(variant="compact", elem_id="CCZ_seed_row"):
+                    use_main_seed = gr.Checkbox(
+                        label="Use main image seed for decloning",
+                        value=True,
+                        elem_id="CCZ_use_main_seed")
+                    with FormRow(variant="compact"):
                         declone_seed = gr.Number(
+                            label="Declone seed",
                             visible=False,
-                            label='Declone seed',
                             value=-1,
-                            elem_id="CCZ_seed")
+                            elem_id="CCZ_declone_seed")
                         random_seed = ToolButton(
                             random_symbol,
                             visible=False,
-                            elem_id="CCZ_random_seed",
-                            label='Random seed')
+                            label="Random seed",
+                            elem_id="CCZ_random_seed")
                         reuse_seed = ToolButton(
                             reuse_symbol,
                             visible=False,
-                            elem_id="CCZ_reuse_seed",
-                            label='Reuse seed')
+                            label="Reuse seed",
+                            elem_id="CCZ_reuse_seed")
                     fixed_batch_seed = gr.Checkbox(
+                        label="Use first seed for entire batch",
                         value=False,
-                        elem_id="CCZ_fixed_batch_seed",
-                        label="Use first seed for entire batch")
-            with FormRow(elem_id="CCZ_exclude_row") as exclude_row:
-                exclude_regions = gr.Dropdown(choices=regions, label="Exclude regions", multiselect=True)
-                exclude_hairlength = gr.Dropdown(choices=hairlength, label="Exclude hair lengths", multiselect=True)
-                exclude_haircolor = gr.Dropdown(choices=haircolor, label="Exclude hair colors", multiselect=True)
-                exclude_hairstyle = gr.Dropdown(choices=hairstyle, label="Exclude hair styles", multiselect=True)
+                        elem_id="CCZ_fixed_batch_seed")
+            with FormRow():
+                exclude_regions = gr.Dropdown(
+                    label="Exclude regions",
+                    choices=regions,
+                    multiselect=True,
+                    elem_id="CCZ_exclude_regions")
+                exclude_hairlength = gr.Dropdown(
+                    label="Exclude hair lengths",
+                    choices=hairlength,
+                    multiselect=True,
+                    elem_id="CCZ_exclude_hairlength")
+                exclude_haircolor = gr.Dropdown(
+                    label="Exclude hair colors",
+                    choices=haircolor,
+                    multiselect=True,
+                    elem_id="CCZ_exclude_haircolor")
+                exclude_hairstyle = gr.Dropdown(
+                    label="Exclude hair styles",
+                    choices=hairstyle,
+                    multiselect=True,
+                    elem_id="CCZ_exclude_hairstyle")
 
         # event handlers        
         def use_main_seed_change(use_main_seed):

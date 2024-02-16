@@ -31,9 +31,28 @@ If there's anything about this extension that doesn't work the way you think it 
 * [Dynamic Prompts](https://github.com/adieyal/sd-dynamic-prompts): Yes, Dynamic Prompts runs first.
 * [One Button Prompt](https://github.com/AIrjen/OneButtonPrompt): Yes
 * [AnimateDiff](https://github.com/continue-revolution/sd-webui-animatediff): Yes
+* [Config Presets](https://github.com/Zyin055/Config-Presets): Yes
+<details>
+    <summary>Custom fields for Config Presets</summary>
+```
+CCZ_enable
+CCZ_only_adetailer
+CCZ_gender
+CCZ_insert_start
+CCZ_declone_weight
+CCZ_use_main_seed
+CCZ_fixed_batch_seed
+CCZ_declone_seed
+CCZ_components
+CCZ_exclude_regions
+CCZ_exclude_hairlength
+CCZ_exclude_haircolor
+CCZ_exclude_hairstyle
+```
+</details>
 
 ## Version History
-* [v1.0.9](https://github.com/zappityzap/zccz/releases/tag/v1.0.8) - XYZ Plot support
+* [v1.0.9](https://github.com/zappityzap/zccz/releases/tag/v1.0.9) - XYZ Plot support, Config Preset support
 * [v1.0.8](https://github.com/zappityzap/zccz/releases/tag/v1.0.8) - ADetailer-only mode
 * [v1.0.7](https://github.com/zappityzap/zccz/releases/tag/v1.0.7) - ADetailer support, improved debug logging, README update
 * [v1.0.6](https://github.com/zappityzap/zccz/releases/tag/v1.0.6) - Support infotext pasting, revert broken prompt building code, new README
