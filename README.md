@@ -34,21 +34,20 @@ If there's anything about this extension that doesn't work the way you think it 
 * [Config Presets](https://github.com/Zyin055/Config-Presets): Yes
 <details>
     <summary>Custom fields for Config Presets</summary>
-```
-CCZ_enable
-CCZ_only_adetailer
-CCZ_gender
-CCZ_insert_start
-CCZ_declone_weight
-CCZ_use_main_seed
-CCZ_fixed_batch_seed
-CCZ_declone_seed
-CCZ_components
-CCZ_exclude_regions
-CCZ_exclude_hairlength
-CCZ_exclude_haircolor
-CCZ_exclude_hairstyle
-```
+    
+    CCZ_enable
+    CCZ_only_adetailer
+    CCZ_gender
+    CCZ_insert_start
+    CCZ_declone_weight
+    CCZ_use_main_seed
+    CCZ_fixed_batch_seed
+    CCZ_declone_seed
+    CCZ_components
+    CCZ_exclude_regions
+    CCZ_exclude_hairlength
+    CCZ_exclude_haircolor
+    CCZ_exclude_hairstyle
 </details>
 
 ## Version History
