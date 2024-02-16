@@ -48,7 +48,7 @@ def patch():
         xyz_module.AxisOption(
             label=f"{MODULE} Components",
             type=str,
-            apply=apply_components("use_components"),
+            apply=apply_components("components"),
             choices=lambda: ["name", "country", "hair length", "hair color", "hair style"]),
         ])
 

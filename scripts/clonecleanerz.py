@@ -79,13 +79,13 @@ class CloneCleanerZScript(scripts.Script):
                         choices=["female", "male", "generic"],
                         elem_id="CCZ_gender")
             with FormRow():
-                use_components = ["name", "country", "hair length", "hair color", "hair style"]
-                use_components = gr.CheckboxGroup(
+                components = ["name", "country", "hair length", "hair color", "hair style"]
+                components = gr.CheckboxGroup(
                     label="Use declone components",
                     type="value",
-                    value=use_components,
-                    choices=use_components,
-                    elem_id="CCZ_use_components")
+                    value=components,
+                    choices=components,
+                    elem_id="CCZ_components")
             with FormRow():
                 with FormGroup():
                     insert_start = gr.Checkbox(
@@ -174,20 +174,20 @@ class CloneCleanerZScript(scripts.Script):
             inputs=[declone_seed, dummy_component],
             outputs=[declone_seed, dummy_component])
 
-        def use_components_change(use_components):
-            exclude_regions = "country" in use_components
-            exclude_hairlength = "hair length" in use_components
-            exclude_haircolor = "hair color" in use_components
-            exclude_hairstyle = "hair style" in use_components
+        def components_change(components):
+            exclude_regions = "country" in components
+            exclude_hairlength = "hair length" in components
+            exclude_haircolor = "hair color" in components
+            exclude_hairstyle = "hair style" in components
             return [
                 gr.update(visible=exclude_regions),
                 gr.update(visible=exclude_hairlength),
                 gr.update(visible=exclude_haircolor),
                 gr.update(visible=exclude_hairstyle),
             ]
-        use_components.change(
-            fn=use_components_change,
-            inputs=use_components,
+        components.change(
+            fn=components_change,
+            inputs=components,
             outputs=[exclude_regions, exclude_hairlength, exclude_haircolor, exclude_hairstyle],
             show_progress=False)
 
@@ -204,7 +204,7 @@ class CloneCleanerZScript(scripts.Script):
             (declone_weight, "CCZ_declone_weight"),
             (use_main_seed, "CCZ_use_main_seed"),
             (declone_seed, "CCZ_declone_seed"),
-            (use_components, lambda params:list_from_params_key("CCZ_use_components", params)),
+            (components, lambda params:list_from_params_key("CCZ_components", params)),
             (exclude_regions, lambda params:list_from_params_key("CCZ_exclude_regions", params)),
             (exclude_hairlength, lambda params:list_from_params_key("CCZ_exclude_hairlength", params)),
             (exclude_haircolor, lambda params:list_from_params_key("CCZ_exclude_haircolor", params)),
@@ -219,7 +219,7 @@ class CloneCleanerZScript(scripts.Script):
             use_main_seed,
             fixed_batch_seed,
             declone_seed,
-            use_components,
+            components,
             exclude_regions,
             exclude_hairlength,
             exclude_haircolor,
@@ -237,7 +237,7 @@ class CloneCleanerZScript(scripts.Script):
         use_main_seed,
         fixed_batch_seed,
         declone_seed,
-        use_components,
+        components,
         exclude_regions,
         exclude_hairlength,
         exclude_haircolor,
@@ -252,7 +252,7 @@ class CloneCleanerZScript(scripts.Script):
         state.use_main_seed = use_main_seed
         state.fixed_batch_seed = fixed_batch_seed
         state.declone_seed = declone_seed
-        state.use_components = use_components
+        state.components = components
         state.exclude_regions = exclude_regions
         state.exclude_hairlength = exclude_hairlength
         state.exclude_haircolor = exclude_haircolor
@@ -293,11 +293,10 @@ class CloneCleanerZScript(scripts.Script):
         p.extra_generation_params["CCZ_use_main_seed"] = state.use_main_seed
         p.extra_generation_params["CCZ_declone_seed"] = state.declone_seed
 
-        # p.extra_generation_params["CCZ_use_components"] = ",".join(state.use_components)
-        p.extra_generation_params["CCZ_use_components"] = (
-            state.use_components[0]
-            if len(state.use_components) == 1
-            else ",".join(state.use_components)
+        p.extra_generation_params["CCZ_components"] = (
+            state.components[0]
+            if len(state.components) == 1
+            else ",".join(state.components)
         )
 
         if state.exclude_regions:
@@ -317,11 +316,11 @@ class CloneCleanerZScript(scripts.Script):
         haircolors = sorted_difference(hairtree["color"].keys(), state.exclude_haircolor)
         hairstyles = sorted_difference(hairtree["style"].keys(), state.exclude_hairstyle)
 
-        use_name = "name" in state.use_components
-        use_country = "country" in state.use_components
-        use_length = "hair length" in state.use_components
-        use_style = "hair style" in state.use_components
-        use_color = "hair color" in state.use_components
+        use_name = "name" in state.components
+        use_country = "country" in state.components
+        use_length = "hair length" in state.components
+        use_style = "hair style" in state.components
+        use_color = "hair color" in state.components
 
         logger.debug(f"iterating through prompts for batch")
         for i, prompt in enumerate(p.all_prompts):
