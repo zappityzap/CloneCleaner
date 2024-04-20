@@ -8,7 +8,8 @@ The Prompt Tree is unchanged from the original repo. Make a copy and customize i
 If there's anything about this extension that doesn't work the way you think it should: open an issue with details and examples.
 
 ## Notable changes
-* Disabled by default! Accordion closed by default!
+* Disabled by default!
+* Accordion closed by default!
 * ADetailer support
 * Compatible with Dynamic Prompts
 * Allows using a fixed declone seed per batch
@@ -16,10 +17,14 @@ If there's anything about this extension that doesn't work the way you think it 
 * Infotext pasting
 * Debug logging
 
-## Compatibility
+## UI Compatibility
 * Automatic1111: Yes, v1.7.0+
-* Automatic1111 forks: unknown
+* Forge: Yes
+* Other forks: unknown
 * ComfyUI: No, maybe later?
+
+## Model Compatibility
+* Pony-derived (booru tags): Works better with hair components than name and country.
 
 ## Feature Compatibility
 * Infotext: Yes
@@ -61,7 +66,7 @@ If there's anything about this extension that doesn't work the way you think it 
 * [v1.0.2](https://github.com/zappityzap/zccz/releases/tag/v1.0.2) - Replace JS UI code with Gradio event handlers, clean up and style fixes
 * [v1.0.1](https://github.com/zappityzap/zccz/releases/tag/v1.0.1) - Disable by default, close accordion by default
 
-## Settings
+## Options
 * **Enable CloneCleanerZ** - Note: "clonecleanerz" must be added to ADetailer scripts to modify ADetailer prompts.
 * **Only ADetailer** - Only modify the ADetailer prompts, does not change main prompt.
 * **Use declone components** - Select what should be inserted. If **name** is not selected then the prompt will use "person" instead.
@@ -78,9 +83,11 @@ Note that using a blank ADetailer prompt will result in double prompt insertion 
 
 It can be helpful to save mask previews when adjusting mask settings, and to save images before ADetailer when adjusting any other settings. **Save mask previews** and **Save images before ADetailer** can be applied at any time without restarting the UI or A1111.
 
-Mask settings may need to be adjusted to include hair.
+Remember that ADetailer detects and inpaints the face, so mask settings may need to be adjusted to include hair as well.
 
-## Declong Multiple Subjects
+## Decloning Multiple Subjects
+It's possible to declone multiple subjects in the same image, with some success. Keep in mind that CCZ won't be able to declone bodies.
+
 Add CloneCleanerZ to the list of scripts run by ADetailer and override the main prompt in ADetailer. CloneCleanerZ will modify the main prompt, and run again to modify each ADetailer prompt. Enable debug logging and watch the console to see what is happening.
 
 I'm not an expert on ADetailer or ControlNet. These settings worked for me with Photon. Use a high denoise with ControlNet Tile and a medium weight so it has enough room to change the face.
