@@ -1,4 +1,4 @@
-from typing import Union, List, Any
+from typing import Union, List
 from scripts.clonecleanerz_logger import logger_clonecleanerz as logger
 
 class State:

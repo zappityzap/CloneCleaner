@@ -1,8 +1,7 @@
-import sys
 from types import ModuleType
 from typing import Optional
 from modules import scripts
-from lib_ccz.state import state, xyz_attrs
+from lib_ccz.state import xyz_attrs
 from scripts.clonecleanerz_logger import logger_clonecleanerz as logger
 
 def patch():

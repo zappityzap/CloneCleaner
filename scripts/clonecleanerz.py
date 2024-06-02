@@ -1,7 +1,6 @@
 import gradio as gr
 import os
 import random
-import sys
 import yaml
 import traceback
 
@@ -242,7 +241,7 @@ class CloneCleanerZScript(scripts.Script):
         exclude_hairlength,
         exclude_haircolor,
         exclude_hairstyle):
-        logger.debug(f"process(): entered")
+        logger.debug("process(): entered")
 
         state.enable = enable
         state.only_adetailer = only_adetailer
@@ -263,7 +262,7 @@ class CloneCleanerZScript(scripts.Script):
         xyz_attrs.clear()
 
         if not state.enable:
-            logger.debug(f"process(): not enabled, returning")
+            logger.debug("process(): not enabled, returning")
             return
 
         stack = traceback.extract_stack()
@@ -273,12 +272,12 @@ class CloneCleanerZScript(scripts.Script):
             logger.debug(f"from_adetailer={from_adetailer} and only_adetailer={state.only_adetailer}, returning")
             return
         
-        logger.debug(f"setting declone seed")
+        logger.debug("setting declone seed")
         if state.use_main_seed:
             logger.debug(f"use_main_seed is true, using p.all_seeds[0]={p.all_seeds[0]}")
             state.declone_seed = p.all_seeds[0]
         elif state.declone_seed == -1:
-            logger.debug(f"use_main_seed false and declone seed is -1, choosing random seed")
+            logger.debug("use_main_seed false and declone seed is -1, choosing random seed")
             state.declone_seed = int(random.randrange(4294967294))
         else:
             logger.debug(f"use_main_seed false and declone seed is not -1, using specified seed={state.declone_seed}")
@@ -322,7 +321,7 @@ class CloneCleanerZScript(scripts.Script):
         use_style = "hair style" in state.components
         use_color = "hair color" in state.components
 
-        logger.debug(f"iterating through prompts for batch")
+        logger.debug("iterating through prompts for batch")
         for i, prompt in enumerate(p.all_prompts):
             # set declone seed and initialize rng
             rng = random.Random()
