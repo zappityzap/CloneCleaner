@@ -36,6 +36,7 @@ def get_last_params(declone_seed, gallery_index):
         return [int(float(params.get("CCZ_declone_seed", "-0.0"))) + gallery_index, gr_show(False)]
 
 def sorted_difference(a, b):
+    if not b: b = []
     newlist = list(set(a).difference(b))
     newlist.sort()
     return newlist
